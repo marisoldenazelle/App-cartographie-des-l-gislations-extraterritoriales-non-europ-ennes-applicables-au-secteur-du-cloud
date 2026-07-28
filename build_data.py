@@ -1,0 +1,713 @@
+# -*- coding: utf-8 -*-
+"""
+Génère data/note_data.json à partir du contenu de la note d'analyse DGE.
+Ce script sert de source unique de vérité pour le contenu de l'app Streamlit.
+"""
+import json
+
+data = {}
+
+data["meta"] = {
+    "title": "Cartographie des législations extraterritoriales non européennes applicables au secteur du cloud",
+    "subtitle": (
+        "États-Unis, Chine, Royaume-Uni, Russie, Australie, Inde : panorama des régimes "
+        "juridiques d'accès aux données et implications pour la souveraineté numérique "
+        "française et européenne"
+    ),
+    "produced_by": "Direction Générale des Entreprises (DGE)",
+    "date_note": "juillet 2026",
+}
+
+data["synthese"] = {
+    "abstract": [
+        "Le secteur du cloud repose sur des infrastructures et des prestataires soumis, "
+        "au-delà du droit de l'Union européenne, à des législations étrangères qui "
+        "revendiquent une portée extraterritoriale : elles s'appliquent à des données "
+        "hébergées en France ou dans l'Union du seul fait de la nationalité, de la "
+        "localisation du siège ou du lien capitalistique du fournisseur, ou encore du lieu "
+        "de résidence des utilisateurs finaux. Cette note recense et analyse les principaux "
+        "régimes non membres de l'Union européenne qui produisent un tel effet sur les "
+        "données traitées par des fournisseurs de cloud, qu'ils soient américains, chinois, "
+        "britanniques, russes, australiens ou indiens, et qui sont donc directement "
+        "pertinents pour l'analyse des risques de souveraineté numérique portée par la DGE.",
+        "Six régimes juridiques majeurs sont identifiés : le CLOUD Act (2018) et l'article "
+        "702 du FISA aux États-Unis ; la loi sur le renseignement national (2017), la loi "
+        "sur la cybersécurité (2017), la loi sur la sécurité des données (2021) et la loi "
+        "sur la protection des informations personnelles (2021) en Chine ; l'Investigatory "
+        "Powers Act (2016) au Royaume-Uni ; la loi de localisation des données personnelles "
+        "n° 242-FZ (2015, renforcée en 2025) en Russie ; le Telecommunications and Other "
+        "Legislation Amendment (Assistance and Access) Act (2018) en Australie ; et le "
+        "Digital Personal Data Protection Act (2023) en Inde.",
+        "Le risque central pour le secteur du cloud tient à la déconnexion entre la "
+        "localisation physique des données et la juridiction effectivement compétente : "
+        "plusieurs de ces textes fondent leur portée extraterritoriale sur le contrôle "
+        "capitalistique ou la nationalité du prestataire (États-Unis, Chine), et non sur le "
+        "lieu d'hébergement des serveurs. Un client français peut ainsi voir ses données, "
+        "hébergées dans un centre de données situé en France ou dans l'Union, rendues "
+        "accessibles à une autorité étrangère par l'intermédiaire d'un fournisseur soumis à "
+        "cette autorité.",
+        "Ces régimes se distinguent par leur fondement, leur intensité et leur mode "
+        "opératoire : les États-Unis et le Royaume-Uni recourent à un cadre judiciaire ou "
+        "quasi-judiciaire (mandats, injonctions, notices), la Chine et la Russie imposent des "
+        "obligations de coopération plus directes et moins encadrées par un contrôle "
+        "juridictionnel indépendant, tandis que l'Australie et l'Inde combinent des logiques "
+        "d'assistance technique (interception, contournement du chiffrement) et de "
+        "protection des données à portée extraterritoriale.",
+        "Face à ces risques, la réponse française et européenne s'est structurée autour de "
+        "la qualification SecNumCloud de l'ANSSI, du projet de schéma européen de "
+        "certification EUCS — dont le critère de souveraineté a été affaibli sous la "
+        "pression de plusieurs États membres et d'acteurs industriels — et, plus récemment, "
+        "du projet de règlement européen sur le développement du cloud et de l'IA (Cloud and "
+        "AI Development Act, CADA), présenté par la Commission européenne en juin 2026, qui "
+        "introduit une grille de niveaux de souveraineté pour la commande publique.",
+        "La présente note propose, en conclusion, des pistes d'action pour la DGE afin de "
+        "renforcer l'articulation entre qualification nationale, certification européenne et "
+        "stratégie industrielle de filière.",
+    ],
+    "regimes_cles": [
+        {"pays": "États-Unis", "texte": "CLOUD Act", "annee": "2018"},
+        {"pays": "États-Unis", "texte": "FISA — art. 702", "annee": "1978 / 2024"},
+        {"pays": "Chine", "texte": "Loi sur le renseignement national", "annee": "2017"},
+        {"pays": "Chine", "texte": "Loi sur la cybersécurité", "annee": "2017"},
+        {"pays": "Chine", "texte": "Loi sur la sécurité des données (DSL)", "annee": "2021"},
+        {"pays": "Chine", "texte": "Loi sur la protection des informations personnelles (PIPL)", "annee": "2021"},
+        {"pays": "Royaume-Uni", "texte": "Investigatory Powers Act", "annee": "2016"},
+        {"pays": "Russie", "texte": "Loi n° 242-FZ (localisation des données)", "annee": "2015 / 2025"},
+        {"pays": "Australie", "texte": "TOLA (Assistance and Access Act)", "annee": "2018"},
+        {"pays": "Inde", "texte": "Digital Personal Data Protection Act", "annee": "2023"},
+    ],
+}
+
+data["methodologie"] = {
+    "objet": (
+        "Cette note répond à une demande d'analyse des lois étrangères à portée "
+        "extraterritoriale susceptibles de s'appliquer au secteur du cloud, à l'exclusion "
+        "des textes émanant des États membres de l'Union européenne ou du droit de l'Union "
+        "lui-même. Elle a vocation à servir de document de référence partageable avec les "
+        "parties prenantes du secteur (fournisseurs, clients, filière de la confiance "
+        "numérique)."
+    ),
+    "definition": (
+        "On entend ici par « portée extraterritoriale » toute disposition qui permet à une "
+        "autorité publique étrangère d'exiger d'un opérateur, ou de contraindre un "
+        "opérateur, à un acte relatif à des données (accès, communication, localisation, "
+        "modification, interception, levée du chiffrement) alors que tout ou partie du "
+        "traitement, de l'infrastructure ou des utilisateurs concernés se trouve hors du "
+        "territoire de l'État à l'origine de la norme."
+    ),
+    "fondements": [
+        {
+            "titre": "Nationalité / contrôle capitalistique du prestataire",
+            "description": (
+                "Le droit s'applique parce que l'entreprise est américaine, chinoise, "
+                "britannique, etc., indépendamment du lieu d'hébergement."
+            ),
+        },
+        {
+            "titre": "Marché visé ou personnes concernées",
+            "description": (
+                "Le droit s'applique parce que le service cible des personnes situées sur "
+                "le territoire de l'État, sur le modèle du RGPD."
+            ),
+        },
+        {
+            "titre": "Intérêt national invoqué",
+            "description": (
+                "Le droit s'applique parce que l'activité, où qu'elle se déroule, est jugée "
+                "porter atteinte à la sécurité ou aux intérêts de l'État."
+            ),
+        },
+    ],
+    "perimetre": (
+        "Six juridictions ont été retenues en raison de leur poids dans le marché mondial "
+        "du cloud, de la présence de fournisseurs actifs en France ou de précédents "
+        "documentés d'application extraterritoriale : les États-Unis, la Chine, le "
+        "Royaume-Uni, la Russie, l'Australie et l'Inde. D'autres juridictions (Israël, "
+        "Corée du Sud, Japon, Canada) disposent de dispositifs de renseignement ou de "
+        "protection des données pouvant comporter une dimension extraterritoriale plus "
+        "limitée ou moins documentée à ce stade ; elles sont mentionnées comme axes de "
+        "veille complémentaires."
+    ),
+    "sources_limites": (
+        "L'analyse s'appuie sur les textes législatifs primaires, les commentaires "
+        "juridiques et institutionnels disponibles publiquement, ainsi que sur les "
+        "positions publiées par les autorités de régulation compétentes (Commission "
+        "européenne, Comité européen de la protection des données, ANSSI). Elle ne "
+        "constitue pas une consultation juridique et ne se substitue pas à une analyse "
+        "individualisée par contrat ou par fournisseur, les modalités d'application pouvant "
+        "varier selon la structuration contractuelle et capitalistique de chaque acteur."
+    ),
+}
+
+data["pays"] = [
+    {
+        "id": "usa",
+        "nom": "États-Unis",
+        "drapeau": "🇺🇸",
+        "intro": (
+            "Les États-Unis concentrent le corpus le plus ancien et le plus documenté de "
+            "textes à portée extraterritoriale applicables aux données hébergées dans le "
+            "cloud, en raison de la position dominante de leurs fournisseurs sur le marché "
+            "mondial."
+        ),
+        "textes": [
+            {
+                "nom": "CLOUD Act (Clarifying Lawful Overseas Use of Data Act)",
+                "annee": "2018",
+                "url": "https://www.justice.gov/criminal/cloud-act-resources",
+                "source_label": "Ressources officielles — U.S. Department of Justice",
+                "description": (
+                    "Adopté le 23 mars 2018 dans le cadre d'une loi de finances, le CLOUD "
+                    "Act modifie le Stored Communications Act de 1986 pour préciser que tout "
+                    "fournisseur de services relevant de la juridiction américaine (parce "
+                    "qu'il y est constitué, y a son siège ou y exerce substantiellement son "
+                    "activité) est tenu de communiquer, sur demande d'une autorité américaine "
+                    "habilitée, les données qu'il détient, contrôle ou possède, quel que soit "
+                    "le lieu où ces données sont stockées dans le monde. Le texte fait ainsi "
+                    "prévaloir un critère de contrôle par l'opérateur sur un critère de "
+                    "localisation physique du serveur : une filiale européenne d'un groupe "
+                    "américain, ou un service américain opérant des centres de données en "
+                    "France, reste soumis à cette obligation. Le CLOUD Act instaure également "
+                    "un mécanisme de contestation (« comity analysis ») permettant au "
+                    "fournisseur de soulever un conflit avec le droit du pays où les données "
+                    "sont stockées, ainsi qu'un cadre d'accords bilatéraux exécutifs entre les "
+                    "États-Unis et certains pays partenaires (le Royaume-Uni depuis 2019, "
+                    "l'Australie depuis 2021) facilitant l'accès réciproque aux données sans "
+                    "procédure judiciaire longue ; aucun accord de ce type n'est à ce jour "
+                    "conclu avec l'Union européenne, les négociations UE-États-Unis engagées "
+                    "depuis 2019 n'ayant pas abouti."
+                ),
+            },
+            {
+                "nom": "Article 702 du Foreign Intelligence Surveillance Act (FISA)",
+                "annee": "1978 / réautorisé 2024",
+                "url": "https://www.law.cornell.edu/uscode/text/50/1881a",
+                "source_label": "Texte codifié — 50 U.S. Code § 1881a (Cornell LII)",
+                "description": (
+                    "L'article 702 du FISA autorise les services de renseignement américains "
+                    "à collecter, sans mandat individuel préalable, les communications "
+                    "électroniques de personnes non américaines situées hors des États-Unis, "
+                    "par le biais de fournisseurs de services de communications électroniques "
+                    "américains (ce qui inclut les grands fournisseurs de cloud et de "
+                    "messagerie). Réautorisé pour deux ans par le Reforming Intelligence and "
+                    "Securing America Act (RISAA) en avril 2024, ce dispositif arrive à "
+                    "échéance le 20 avril 2026, sauf nouvelle prorogation par le Congrès "
+                    "actuellement en discussion. Le Comité européen de la protection des "
+                    "données a exprimé, dans son réexamen 2024 du cadre de protection des "
+                    "données UE-États-Unis (Data Privacy Framework), des réserves sur "
+                    "l'élargissement en 2024 de la définition des « fournisseurs de services "
+                    "de communications électroniques » soumis à ce régime, élargissement "
+                    "susceptible d'accroître le nombre d'acteurs du cloud concernés."
+                ),
+            },
+            {
+                "nom": "Executive Order 12333",
+                "annee": "1981",
+                "url": "https://www.archives.gov/federal-register/codification/executive-order/12333.html",
+                "source_label": "Texte codifié — National Archives",
+                "description": (
+                    "Ce décret présidentiel de 1981, non révisé sur ce point depuis, encadre "
+                    "les activités de collecte de renseignement extraterritoriales des "
+                    "agences américaines en dehors du cadre du FISA, notamment la collecte "
+                    "réalisée directement sur les infrastructures de télécommunications ou "
+                    "entre centres de données à l'étranger. Il a été invoqué pour justifier, "
+                    "selon des révélations documentées, l'interception de flux de données non "
+                    "chiffrés transitant entre centres de données de grands fournisseurs. "
+                    "Contrairement au CLOUD Act et au FISA, ce texte ne prévoit pas de "
+                    "contrôle juridictionnel indépendant ni de mécanisme de recours pour les "
+                    "personnes non américaines."
+                ),
+            },
+        ],
+        "note_complementaire": (
+            "Le USA PATRIOT Act (2001), largement remplacé depuis par le USA Freedom Act "
+            "(2015) s'agissant de la collecte de métadonnées en masse, reste parfois invoqué "
+            "dans le débat public comme fondement des pouvoirs d'accès américains ; il n'a "
+            "plus, en 2026, la portée qu'on lui prête souvent, l'essentiel du risque "
+            "extraterritorial actuel reposant sur le CLOUD Act et l'article 702 du FISA."
+        ),
+    },
+    {
+        "id": "chine",
+        "nom": "Chine",
+        "drapeau": "🇨🇳",
+        "intro": (
+            "Le corpus chinois se distingue par l'articulation de quatre textes "
+            "complémentaires, construits autour d'une logique de sécurité nationale et de "
+            "contrôle centralisé des données, avec une portée extraterritoriale assumée et "
+            "explicite depuis 2021."
+        ),
+        "textes": [
+            {
+                "nom": "Loi sur le renseignement national",
+                "annee": "2017",
+                "url": "https://en.wikipedia.org/wiki/National_Intelligence_Law_of_the_People%27s_Republic_of_China",
+                "source_label": "Présentation et analyse du texte (référence secondaire)",
+                "description": (
+                    "L'article 7 de cette loi dispose que toute organisation et tout citoyen "
+                    "chinois doivent soutenir, prêter assistance et coopérer avec les "
+                    "services de renseignement national conformément à la loi ; l'article 14 "
+                    "permet aux services de renseignement d'exiger cette assistance. Cette "
+                    "obligation, sans mécanisme d'exécution forcée explicitement défini dans "
+                    "le texte, est néanmoins régulièrement citée par les autorités "
+                    "occidentales pour justifier une présomption de risque structurel pesant "
+                    "sur toute entreprise chinoise de technologie, y compris ses filiales ou "
+                    "infrastructures hébergées hors de Chine, un fournisseur ne pouvant, selon "
+                    "cette lecture, opposer un refus à une demande des autorités chinoises "
+                    "même pour des données détenues à l'étranger."
+                ),
+            },
+            {
+                "nom": "Loi sur la cybersécurité",
+                "annee": "2017",
+                "url": None,
+                "source_label": None,
+                "description": (
+                    "Ce texte fondateur impose des obligations de localisation des données et "
+                    "de sécurité aux opérateurs d'infrastructures d'information critiques "
+                    "opérant en Chine, et pose les bases du régime chinois de classification "
+                    "et de transfert transfrontalier des données, précisé ensuite par la loi "
+                    "sur la sécurité des données."
+                ),
+            },
+            {
+                "nom": "Loi sur la sécurité des données (Data Security Law)",
+                "annee": "2021",
+                "url": "https://www.chinalawtranslate.com/en/datasecuritylaw/",
+                "source_label": "Traduction non officielle — China Law Translate",
+                "description": (
+                    "Entrée en vigueur le 1er septembre 2021, cette loi étend explicitement "
+                    "sa portée extraterritoriale à toute activité de traitement de données "
+                    "réalisée hors du territoire chinois dès lors qu'elle est jugée porter "
+                    "atteinte à la sécurité nationale, à l'intérêt public ou aux droits et "
+                    "intérêts légitimes de citoyens ou d'organisations chinois. Une "
+                    "entreprise ou un fournisseur de cloud établi en France pourrait ainsi, "
+                    "en théorie, être visé par ce texte au titre d'un traitement de données "
+                    "concernant des ressortissants ou intérêts chinois, sans lien direct avec "
+                    "le territoire chinois."
+                ),
+            },
+            {
+                "nom": "Loi sur la protection des informations personnelles (PIPL)",
+                "annee": "2021",
+                "url": "https://personalinformationprotectionlaw.com/",
+                "source_label": "Traduction non officielle — personalinformationprotectionlaw.com",
+                "description": (
+                    "Entrée en vigueur le 1er novembre 2021, la PIPL constitue l'équivalent "
+                    "chinois du RGPD, avec un mécanisme d'extraterritorialité comparable dans "
+                    "sa formulation à l'article 3 du RGPD : elle s'applique au traitement de "
+                    "données personnelles de personnes situées en Chine réalisé hors de Chine "
+                    "dès lors que ce traitement vise à leur fournir des produits ou services, "
+                    "à analyser ou évaluer leur comportement, ou dans d'autres cas prévus par "
+                    "la réglementation."
+                ),
+            },
+        ],
+        "note_complementaire": None,
+    },
+    {
+        "id": "uk",
+        "nom": "Royaume-Uni",
+        "drapeau": "🇬🇧",
+        "intro": (
+            "Bien que non membre de l'Union européenne depuis le 31 janvier 2020, le "
+            "Royaume-Uni conserve un cadre juridique proche du RGPD (UK GDPR) mais se "
+            "distingue par l'ampleur des pouvoirs de surveillance conférés par "
+            "l'Investigatory Powers Act 2016, pouvoirs qui ont une portée extraterritoriale "
+            "explicite."
+        ),
+        "textes": [
+            {
+                "nom": "Investigatory Powers Act 2016 (IPA) — Technical Capability Notices",
+                "annee": "2016",
+                "url": "https://www.legislation.gov.uk/ukpga/2016/25/contents",
+                "source_label": "Texte officiel — legislation.gov.uk",
+                "description": (
+                    "L'IPA autorise le gouvernement britannique à délivrer des « Technical "
+                    "Capability Notices » (TCN) imposant à un opérateur de télécommunications "
+                    "ou de services numériques — y compris un fournisseur de cloud — de "
+                    "développer ou de maintenir une capacité technique permettant de répondre "
+                    "à une demande d'accès aux communications, aux contenus ou aux données, y "
+                    "compris en levant une protection de chiffrement. Le texte prévoit "
+                    "explicitement qu'une telle notice peut être adressée à une personne "
+                    "située hors du Royaume-Uni et peut lui imposer des actes à accomplir "
+                    "hors du territoire britannique. En janvier 2025, le ministère de "
+                    "l'Intérieur britannique a ainsi notifié à Apple une TCN visant à obtenir "
+                    "une porte dérobée dans son service de chiffrement de bout en bout "
+                    "Advanced Data Protection pour iCloud, illustrant concrètement l'usage de "
+                    "ce pouvoir à l'égard d'un acteur mondial du cloud. Une consultation sur "
+                    "la révision du régime des notices de l'IPA a par ailleurs été engagée par "
+                    "le gouvernement britannique, sans qu'une réforme substantielle de la "
+                    "portée extraterritoriale ne soit à ce stade annoncée."
+                ),
+            }
+        ],
+        "note_complementaire": (
+            "Le Royaume-Uni ayant conservé un régime de protection des données largement "
+            "équivalent au RGPD, la difficulté pour les opérateurs cloud ne réside pas dans "
+            "un déficit de protection des données personnelles au sens classique, mais dans "
+            "la coexistence de ce cadre protecteur avec des pouvoirs de surveillance et "
+            "d'assistance technique extraterritoriaux particulièrement étendus, sans "
+            "équivalent strict dans le droit de l'Union."
+        ),
+    },
+    {
+        "id": "russie",
+        "nom": "Russie",
+        "drapeau": "🇷🇺",
+        "intro": None,
+        "textes": [
+            {
+                "nom": "Loi fédérale n° 242-FZ sur la localisation des données personnelles",
+                "annee": "2015",
+                "url": None,
+                "source_label": None,
+                "description": (
+                    "Entrée en vigueur le 1er septembre 2015, cette loi modifiant la loi "
+                    "fédérale sur les données personnelles n° 152-FZ impose que toute base de "
+                    "données utilisée pour collecter, enregistrer, systématiser, accumuler, "
+                    "stocker, mettre à jour ou extraire des données personnelles de citoyens "
+                    "russes soit localisée sur des serveurs situés en Russie. Elle s'applique "
+                    "à tout opérateur, russe ou étranger, dès lors qu'il collecte des données "
+                    "de citoyens russes, sans considération du lieu d'incorporation de "
+                    "l'entreprise : un service en ligne français dont l'application est "
+                    "utilisée par des ressortissants russes serait, en théorie, tenu de "
+                    "dupliquer le stockage primaire de ces données sur un serveur russe. "
+                    "L'autorité de contrôle, Roskomnadzor, a démontré sa capacité à bloquer "
+                    "des plateformes non conformes, comme dans le cas de LinkedIn en 2016."
+                ),
+            },
+            {
+                "nom": "Durcissement récent — loi n° 23-FZ",
+                "annee": "2025",
+                "url": None,
+                "source_label": None,
+                "description": (
+                    "Une loi fédérale du 28 février 2025, entrée en vigueur le 1er juillet "
+                    "2025, a renforcé le régime de localisation sur trois aspects (extension "
+                    "du champ des données visées, alourdissement des sanctions financières, "
+                    "renforcement des pouvoirs de contrôle de Roskomnadzor), accentuant le "
+                    "risque pour tout acteur du cloud, même sans présence commerciale en "
+                    "Russie, dès lors que des utilisateurs russes accèdent à son service."
+                ),
+            },
+        ],
+        "note_complementaire": None,
+    },
+    {
+        "id": "australie",
+        "nom": "Australie",
+        "drapeau": "🇦🇺",
+        "intro": None,
+        "textes": [
+            {
+                "nom": "Telecommunications and Other Legislation Amendment (Assistance and Access) Act — TOLA",
+                "annee": "2018",
+                "url": "https://www.legislation.gov.au/Details/C2018A00148",
+                "source_label": "Texte officiel — Federal Register of Legislation",
+                "description": (
+                    "Adopté en décembre 2018 (dit « TOLA »), ce texte crée un cadre "
+                    "d'assistance technique à trois niveaux applicable aux fournisseurs de "
+                    "télécommunications et de services numériques, y compris de cloud, où "
+                    "qu'ils soient établis : la Technical Assistance Request (TAR), demande "
+                    "d'assistance sur base volontaire ; la Technical Assistance Notice (TAN), "
+                    "qui impose une obligation d'assistance (par exemple pour déchiffrer des "
+                    "communications) sous peine de sanctions ; et la Technical Capability "
+                    "Notice (TCN), qui impose la construction d'une nouvelle fonctionnalité "
+                    "permettant l'accès aux données pour les services de sécurité, également "
+                    "sous peine de sanctions. Le texte a une portée extraterritoriale "
+                    "explicite et peut viser des « designated communications providers » "
+                    "établis hors d'Australie, y compris des fournisseurs de cloud desservant "
+                    "des utilisateurs australiens sans y être implantés. Une garantie dite de "
+                    "« faiblesse systémique » interdit en théorie d'imposer une vulnérabilité "
+                    "affectant l'ensemble d'un système de chiffrement, mais la portée exacte "
+                    "de cette limite reste discutée par la doctrine."
+                ),
+            }
+        ],
+        "note_complementaire": None,
+    },
+    {
+        "id": "inde",
+        "nom": "Inde",
+        "drapeau": "🇮🇳",
+        "intro": None,
+        "textes": [
+            {
+                "nom": "Digital Personal Data Protection Act (DPDPA)",
+                "annee": "2023",
+                "url": "https://www.indiacode.nic.in/handle/123456789/22037?view_type=browse",
+                "source_label": "Texte officiel — India Code",
+                "description": (
+                    "Adopté en 2023, ce texte retient un critère d'extraterritorialité fondé "
+                    "sur le ciblage du marché indien, sur le modèle du RGPD : il s'applique "
+                    "au traitement de données personnelles numériques réalisé hors d'Inde dès "
+                    "lors que ce traitement est lié à une offre de biens ou de services à des "
+                    "personnes situées en Inde. Le critère déterminant est le caractère "
+                    "intentionnellement dirigé vers l'Inde de l'offre, et non le simple fait "
+                    "qu'un utilisateur indien accède incidemment à un service mondial. Les "
+                    "sanctions peuvent atteindre 250 crores de roupies (environ 27 millions "
+                    "d'euros) par manquement. Ce texte, moins intrusif dans sa conception que "
+                    "les régimes chinois ou russe puisqu'il relève d'une logique de "
+                    "protection des données plutôt que de sécurité nationale, crée néanmoins "
+                    "une nouvelle strate de conformité extraterritoriale pour tout fournisseur "
+                    "de cloud desservant, même indirectement, des utilisateurs finaux en Inde."
+                ),
+            }
+        ],
+        "note_complementaire": None,
+    },
+]
+
+data["autres_juridictions"] = (
+    "D'autres cadres méritent une veille complémentaire sans avoir fait l'objet, à ce "
+    "stade, d'une analyse aussi approfondie dans la présente note : la loi israélienne sur "
+    "le renseignement et les pouvoirs de cyberdéfense de l'unité 8200, la loi coréenne sur "
+    "la protection des informations personnelles (PIPA) dont l'extraterritorialité reste "
+    "circonscrite aux services ciblant la Corée du Sud, et le cadre canadien qui, bien "
+    "qu'aligné sur des standards proches du RGPD, pourrait interagir avec le CLOUD Act "
+    "américain dans le cadre d'accords bilatéraux. Ces juridictions seront intégrées dans "
+    "une prochaine mise à jour de la présente note si l'analyse le justifie."
+)
+
+# Tableau comparatif — reprend fidèlement le tableau de la note, avec score numérique
+# pour la visualisation (Faible=1, Moyen=2, Élevé=3, "Faible à moyen"=1.5)
+risk_score = {"Élevé": 3, "Moyen": 2, "Faible à moyen": 1.5, "Faible": 1}
+
+tableau_rows = [
+    dict(juridiction="États-Unis", pays_id="usa", texte="CLOUD Act", annee="2018",
+         fondement="Contrôle du prestataire (nationalité/siège du groupe)",
+         obligation="Communication de données sur demande judiciaire, quel que soit le lieu de stockage",
+         niveau_risque="Élevé"),
+    dict(juridiction="États-Unis", pays_id="usa", texte="FISA — art. 702", annee="1978 / 2024",
+         fondement="Nationalité du fournisseur de services de communication",
+         obligation="Collecte de renseignement sans mandat individuel visant des non-Américains",
+         niveau_risque="Élevé"),
+    dict(juridiction="États-Unis", pays_id="usa", texte="Executive Order 12333", annee="1981",
+         fondement="Compétence exécutive hors cadre FISA",
+         obligation="Collecte de renseignement extraterritoriale, sans recours indépendant",
+         niveau_risque="Moyen"),
+    dict(juridiction="Chine", pays_id="chine", texte="Loi sur le renseignement national, art. 7", annee="2017",
+         fondement="Nationalité/contrôle de l'organisation",
+         obligation="Obligation générale de coopération avec les services de renseignement",
+         niveau_risque="Élevé"),
+    dict(juridiction="Chine", pays_id="chine", texte="Loi sur la sécurité des données (DSL)", annee="2021",
+         fondement="Intérêt national invoqué, applicable hors du territoire chinois",
+         obligation="Sanctions pour toute activité de données jugée nuisible aux intérêts chinois",
+         niveau_risque="Élevé"),
+    dict(juridiction="Chine", pays_id="chine", texte="PIPL", annee="2021",
+         fondement="Ciblage du marché chinois (comparable art. 3 RGPD)",
+         obligation="Conformité et information sur les transferts vers des sous-traitants tiers",
+         niveau_risque="Moyen"),
+    dict(juridiction="Royaume-Uni", pays_id="uk", texte="Investigatory Powers Act — TCN", annee="2016",
+         fondement="Compétence exécutive extraterritoriale explicite",
+         obligation="Obligation de capacité technique d'accès, y compris contournement du chiffrement",
+         niveau_risque="Élevé"),
+    dict(juridiction="Russie", pays_id="russie", texte="Loi n° 242-FZ / 23-FZ", annee="2015 / 2025",
+         fondement="Ciblage des utilisateurs russes, indépendant du lieu d'incorporation",
+         obligation="Localisation obligatoire des données sur serveur russe",
+         niveau_risque="Moyen"),
+    dict(juridiction="Australie", pays_id="australie", texte="TOLA (TAR/TAN/TCN)", annee="2018",
+         fondement="Compétence exécutive extraterritoriale explicite",
+         obligation="Assistance technique, y compris développement de capacités d'accès",
+         niveau_risque="Moyen"),
+    dict(juridiction="Inde", pays_id="inde", texte="Digital Personal Data Protection Act", annee="2023",
+         fondement="Ciblage du marché indien (comparable RGPD)",
+         obligation="Conformité en matière de protection des données ; sanctions financières",
+         niveau_risque="Faible à moyen"),
+]
+for row in tableau_rows:
+    row["score_risque"] = risk_score[row["niveau_risque"]]
+
+data["tableau_comparatif"] = tableau_rows
+data["tableau_note"] = (
+    "Ce classement qualitatif reflète la probabilité d'application combinée à l'intensité "
+    "de l'obligation pour un fournisseur de cloud établi en France mais dont la structure "
+    "capitalistique, la clientèle ou les partenaires technologiques présentent un lien avec "
+    "la juridiction concernée. Il ne préjuge pas d'un risque nul en l'absence d'un tel lien, "
+    "notamment pour les régimes fondés sur le ciblage du marché (Chine/PIPL, Inde, Russie) "
+    "qui peuvent s'appliquer à un acteur purement européen desservant des utilisateurs "
+    "finaux situés dans ces pays."
+)
+
+data["risques_transversaux"] = [
+    {
+        "titre": "Un critère de compétence déconnecté de la localisation physique des données",
+        "texte": (
+            "Le trait commun le plus significatif entre le CLOUD Act américain, la loi "
+            "chinoise sur la sécurité des données et la loi russe de localisation est la "
+            "primauté donnée au contrôle de l'opérateur ou au ciblage du marché sur la "
+            "localisation physique du serveur. Cette logique rend inopérante, à elle seule, "
+            "une stratégie de simple hébergement local des données : un client français "
+            "hébergé en France chez un fournisseur filiale d'un groupe américain, chinois ou "
+            "soumis à une autre de ces juridictions demeure exposé à une demande d'accès "
+            "émanant de l'État d'origine du groupe."
+        ),
+    },
+    {
+        "titre": "Le conflit avec le droit de l'Union européenne",
+        "texte": (
+            "Ce constat a été au cœur du contentieux Schrems II (arrêt de la Cour de "
+            "justice de l'Union européenne du 16 juillet 2020), qui a invalidé le Privacy "
+            "Shield au motif que le droit américain ne garantissait pas un niveau de "
+            "protection équivalent au RGPD face aux pouvoirs de surveillance étatique. Le "
+            "Comité européen de la protection des données a réitéré, dans son réexamen du "
+            "cadre de protection des données UE-États-Unis (Data Privacy Framework, en "
+            "vigueur depuis 2023), des inquiétudes sur la portée de l'article 702 du FISA et "
+            "sur son articulation avec les garanties offertes aux personnes concernées de "
+            "l'Union. Ce même conflit de logiques se retrouve, de manière moins documentée "
+            "mais structurellement comparable, entre le RGPD et les lois chinoise et russe."
+        ),
+    },
+    {
+        "titre": "Le risque spécifique des portes dérobées techniques",
+        "texte": (
+            "Les régimes britannique (Investigatory Powers Act) et australien (TOLA) "
+            "introduisent un risque d'une nature différente : au-delà de la communication "
+            "ponctuelle de données, ils permettent d'exiger la construction ou le maintien "
+            "d'une capacité technique d'accès, y compris par contournement du chiffrement. "
+            "Ce type d'obligation, si elle est exécutée par un fournisseur mondial, peut "
+            "potentiellement affecter l'intégrité du chiffrement pour l'ensemble des "
+            "utilisateurs du service, y compris ceux situés en France, indépendamment de "
+            "toute demande les visant spécifiquement."
+        ),
+    },
+    {
+        "titre": "Une hétérogénéité des garanties procédurales",
+        "texte": (
+            "Les régimes analysés présentent des niveaux très inégaux de contrôle "
+            "juridictionnel indépendant et de voies de recours pour les personnes "
+            "concernées. Les États-Unis et le Royaume-Uni maintiennent un contrôle "
+            "judiciaire ou quasi-judiciaire des demandes (bien que critiqué s'agissant du "
+            "FISA et de l'Executive Order 12333), tandis que les textes chinois ne prévoient "
+            "pas de mécanisme de recours indépendant identifiable pour les personnes ou "
+            "entités étrangères concernées, ce qui accentue l'incertitude juridique pour les "
+            "opérateurs cloud."
+        ),
+    },
+    {
+        "titre": "Synthèse du risque pour la filière française",
+        "texte": (
+            "Pour un fournisseur de cloud établi en France, le risque se concentre "
+            "principalement sur trois situations : le recours à un fournisseur sous-jacent "
+            "(IaaS/PaaS) soumis à l'une de ces juridictions, y compris via une filiale "
+            "européenne ; la fourniture de services à des utilisateurs finaux situés dans "
+            "l'une de ces juridictions, activant les régimes fondés sur le ciblage du marché "
+            "(Chine, Russie, Inde) ; et l'utilisation de composants technologiques "
+            "(chiffrement, équipements réseau) fournis par des acteurs soumis à des "
+            "obligations d'assistance technique (Royaume-Uni, Australie, États-Unis)."
+        ),
+    },
+]
+
+data["reponses_reglementaires"] = [
+    {
+        "titre": "La qualification SecNumCloud de l'ANSSI",
+        "url": "https://cyber.gouv.fr/enjeux-technologiques/cloud/faq-qualification-secnumcloud/",
+        "source_label": "ANSSI — cyber.gouv.fr",
+        "texte": (
+            "Portée par l'Agence nationale de la sécurité des systèmes d'information "
+            "(ANSSI), la qualification SecNumCloud demeure à ce jour le seul référentiel "
+            "qui matérialise une immunité vis-à-vis des législations extraterritoriales par "
+            "des exigences cumulatives d'hébergement, d'exploitation et de gouvernance "
+            "européennes, incluant des critères capitalistiques visant à exclure tout "
+            "contrôle par une entité soumise à une législation extraterritoriale non "
+            "européenne au sens de la présente note."
+        ),
+    },
+    {
+        "titre": "Le schéma européen de certification EUCS et l'affaiblissement du critère de souveraineté",
+        "url": "https://www.enisa.europa.eu/publications/eucs-cloud-service-scheme",
+        "source_label": "ENISA — schéma candidat EUCS",
+        "texte": (
+            "Le projet de schéma européen de certification de la cybersécurité pour les "
+            "services cloud (EUCS), porté par l'ENISA, devait initialement comporter un "
+            "niveau de certification excluant les fournisseurs soumis à un droit "
+            "extraterritorial non européen. Ce critère de souveraineté a été retiré des "
+            "versions ultérieures du projet sous la pression de plusieurs États membres et "
+            "d'acteurs industriels, et l'adoption du schéma reste, à la date de rédaction de "
+            "la présente note, gelée au niveau européen, ce qui laisse SecNumCloud comme "
+            "référence nationale de facto en l'absence d'équivalent européen contraignant."
+        ),
+    },
+    {
+        "titre": "Le projet de règlement européen sur le développement du cloud et de l'IA (CADA)",
+        "url": "https://digital-strategy.ec.europa.eu/en/library/proposal-cloud-and-ai-development-act-cada",
+        "source_label": "Commission européenne — Shaping Europe's digital future",
+        "texte": (
+            "La Commission européenne a présenté le 3 juin 2026 son projet de Cloud and AI "
+            "Development Act (CADA), qui introduit pour la commande publique une grille à "
+            "quatre niveaux de souveraineté, allant de la simple localisation de "
+            "l'infrastructure en Europe jusqu'à l'absence d'ingérence d'un pays tiers "
+            "combinée à un contrôle capitalistique européen du fournisseur. Ce texte, "
+            "encore en cours de négociation, pourrait constituer le premier cadre européen "
+            "contraignant reprenant, au niveau de l'Union, une logique proche de celle de "
+            "SecNumCloud, avec un potentiel effet d'entraînement sur les marchés privés "
+            "au-delà de la seule commande publique."
+        ),
+    },
+    {
+        "titre": "La stratégie française de « cloud de confiance »",
+        "url": None,
+        "source_label": None,
+        "texte": (
+            "Au-delà de la seule qualification technique, la stratégie française de cloud "
+            "de confiance articule SecNumCloud à un accompagnement industriel des offres "
+            "labellisées, dans une logique de constitution d'une offre alternative crédible "
+            "aux fournisseurs soumis aux régimes extraterritoriaux décrits dans la présente "
+            "note, en particulier américains et chinois."
+        ),
+    },
+]
+
+data["recommandations"] = [
+    "Maintenir et renforcer SecNumCloud comme référentiel de référence tant que l'EUCS ne "
+    "reprend pas un niveau de souveraineté équivalent, en veillant à sa reconnaissance dans "
+    "les négociations du CADA.",
+    "Peser activement dans la négociation du CADA pour que la grille de niveaux de "
+    "souveraineté proposée par la Commission ne se limite pas à la commande publique et "
+    "retienne des critères capitalistiques et d'absence d'ingérence extraterritoriale "
+    "réellement exigeants au niveau le plus élevé.",
+    "Documenter et actualiser périodiquement la présente cartographie, notamment "
+    "s'agissant de l'issue de la réautorisation de l'article 702 du FISA (échéance avril "
+    "2026), de l'application effective de la loi russe n° 23-FZ, et de l'évolution du "
+    "contentieux autour de la Technical Capability Notice britannique visant Apple.",
+    "Sensibiliser les entreprises clientes de cloud, en particulier les PME et ETI, au fait "
+    "que la localisation des données en France ne suffit pas, à elle seule, à écarter un "
+    "risque d'accès extraterritorial si le fournisseur est contrôlé par un groupe soumis à "
+    "l'une des juridictions analysées.",
+    "Encourager, dans les clauses contractuelles types et les guides sectoriels, l'exigence "
+    "de transparence des fournisseurs sur leur structure capitalistique, leurs "
+    "sous-traitants techniques et leur exposition aux demandes d'accès étrangères (rapports "
+    "de transparence).",
+    "Suivre les juridictions complémentaires (Israël, Corée du Sud, Canada) pour déterminer "
+    "si elles justifient une inclusion dans une prochaine version de la présente note.",
+]
+
+data["sources"] = [
+    {"nom": "Congressional Research Service, « Cross-Border Data Sharing Under the CLOUD Act »", "url": "https://www.congress.gov"},
+    {"nom": "Congressional Research Service, « FISA Section 702 and the 2024 RISAA »", "url": "https://www.congress.gov/crs-product/R48592"},
+    {"nom": "Brennan Center for Justice — Section 702 of FISA: 2026 Resource Page", "url": "https://www.brennancenter.org"},
+    {"nom": "EPIC / ODNI — documentation sur l'Executive Order 12333", "url": "https://www.odni.gov/files/NCSC/documents/Regulations/EO_12333.pdf"},
+    {"nom": "China Law Translate — texte annoté de la loi sur le renseignement national (2017, modifiée 2018)", "url": "https://www.chinalawtranslate.com"},
+    {"nom": "Gibson Dunn ; Pillsbury Law ; WilmerHale — analyses PIPL et DSL", "url": None},
+    {"nom": "Legislation.gov.uk — Investigatory Powers Act 2016 ; GOV.UK — consultation TCN", "url": "https://www.legislation.gov.uk/ukpga/2016/25/contents"},
+    {"nom": "Stanford World Intermediary Liability Map (WILMap) — Federal Law No. 242-FZ", "url": None},
+    {"nom": "UpGuard ; CSIS ; Policy Review — analyses du TOLA (Australie)", "url": None},
+    {"nom": "Lexology ; American Bar Association ; KSK Data Privacy — analyses du DPDPA indien", "url": "https://www.indiacode.nic.in/handle/123456789/22037?view_type=browse"},
+    {"nom": "IT Social ; CIO-Online ; Numspot — analyses EUCS, SecNumCloud, CADA", "url": None},
+]
+data["sources_note"] = (
+    "Les éléments de cette note ont été établis à partir des textes législatifs et des "
+    "analyses institutionnelles et juridiques listées ci-dessus, consultées en juillet "
+    "2026. Cette note pourra être mise à jour au fil de l'évolution de ces dossiers, en "
+    "particulier la réautorisation du FISA en 2026 et l'avancement des négociations du "
+    "CADA."
+)
+
+with open("data/note_data.json", "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
+
+print("OK — data/note_data.json généré")
+print("Nombre de juridictions:", len(data["pays"]))
+print("Lignes du tableau comparatif:", len(data["tableau_comparatif"]))
