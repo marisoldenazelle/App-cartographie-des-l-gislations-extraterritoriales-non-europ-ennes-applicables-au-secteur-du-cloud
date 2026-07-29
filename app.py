@@ -7,10 +7,15 @@ import json
 import re
 from pathlib import Path
 
+import io
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
+from docx import Document
+from docx.shared import Pt, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 # ----------------------------------------------------------------------------
 # Configuration & données
@@ -80,8 +85,8 @@ SECTIONS = [
     "📊 Tableau comparatif interactif",
     "⚠️ Analyse transversale des risques",
     "🇪🇺 Réponses réglementaires FR/UE",
-    "✅ Recommandations DGE",
     "📚 Sources",
+    "📄 Export Word",
 ]
 
 st.sidebar.title("🌐 Navigation")
@@ -169,14 +174,18 @@ elif section == "🔍 Recherche plein texte":
                 blocks.append((pays["nom"], f"{pays['nom']} — Introduction", pays["intro"]))
             for texte in pays["textes"]:
                 blocks.append((pays["nom"], f"{pays['nom']} — {texte['nom']}", texte["description"]))
+                for extrait in texte.get("extraits", []):
+                    blocks.append((
+                        pays["nom"],
+                        f"{pays['nom']} — {texte['nom']} — {extrait['reference']}",
+                        extrait["resume"],
+                    ))
             if pays.get("note_complementaire"):
                 blocks.append((pays["nom"], f"{pays['nom']} — Note complémentaire", pays["note_complementaire"]))
         for r in DATA["risques_transversaux"]:
             blocks.append(("Analyse transversale", r["titre"], r["texte"]))
         for r in DATA["reponses_reglementaires"]:
             blocks.append(("Réponses réglementaires", r["titre"], r["texte"]))
-        for i, r in enumerate(DATA["recommandations"], 1):
-            blocks.append(("Recommandations", f"Recommandation {i}", r))
         return blocks
 
     blocks = collect_searchable_blocks()
@@ -234,6 +243,13 @@ elif section == "🗺️ Panorama par juridiction":
             for texte in pays["textes"]:
                 with st.expander(f"📄 {texte['nom']} ({texte['annee']})", expanded=len(pays["textes"]) == 1):
                     st.write(texte["description"])
+
+                    extraits = texte.get("extraits") or []
+                    if extraits:
+                        st.markdown("**Extraits clés :**")
+                        for ex in extraits:
+                            st.markdown(f"- **{ex['reference']}** — {ex['resume']}")
+
                     if texte.get("url"):
                         st.markdown(
                             source_link(texte["url"], texte.get("source_label") or "Accéder au texte"),
@@ -329,34 +345,11 @@ elif section == "📊 Tableau comparatif interactif":
                     st.caption("Source : Annexe")
         st.divider()
 
-    # --- Visualisation ---
-    st.markdown("### Visualisation des niveaux de risque par juridiction")
-    viz_type = st.radio("Type de graphique :", ["Barres par texte", "Score maximal par juridiction"], horizontal=True)
-
-    if viz_type == "Barres par texte":
-        fig = px.bar(
-            df_filtered.sort_values("score_risque"),
-            x="score_risque", y="texte", color="niveau_risque",
-            color_discrete_map=RISK_COLORS,
-            orientation="h",
-            hover_data={"juridiction": True, "fondement": True, "score_risque": False},
-            labels={"score_risque": "Score de risque", "texte": "", "niveau_risque": "Niveau de risque"},
-        )
-        fig.update_layout(height=max(350, 40 * len(df_filtered)), legend_title_text="Niveau de risque")
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        agg = df_filtered.groupby("juridiction", as_index=False)["score_risque"].max()
-        agg = agg.sort_values("score_risque")
-        agg["niveau"] = agg["score_risque"].map(
-            lambda s: "Élevé" if s >= 3 else ("Moyen" if s >= 2 else ("Faible à moyen" if s >= 1.5 else "Faible"))
-        )
-        fig = px.bar(
-            agg, x="score_risque", y="juridiction", color="niveau",
-            color_discrete_map=RISK_COLORS, orientation="h",
-            labels={"score_risque": "Score de risque maximal", "juridiction": ""},
-        )
-        fig.update_layout(height=400, legend_title_text="Niveau de risque")
-        st.plotly_chart(fig, use_container_width=True)
+    st.info(
+        "📊 Les visualisations avancées (frise chronologique, heatmap fondement × obligation, "
+        "radar comparatif) sont en cours de refonte et arriveront dans une prochaine version.",
+        icon="🛠️",
+    )
 
     with st.expander("Voir les données brutes du tableau filtré"):
         st.dataframe(
@@ -386,18 +379,6 @@ elif section == "🇪🇺 Réponses réglementaires FR/UE":
         st.markdown("")
 
 # ----------------------------------------------------------------------------
-# SECTION — Recommandations
-# ----------------------------------------------------------------------------
-elif section == "✅ Recommandations DGE":
-    st.subheader("6. Recommandations pour la DGE")
-    for i, r in enumerate(DATA["recommandations"], 1):
-        st.checkbox(r, key=f"reco_{i}")
-    st.caption(
-        "Cochez les recommandations à retenir pour votre propre synthèse — les cases ne "
-        "sont pas sauvegardées entre sessions."
-    )
-
-# ----------------------------------------------------------------------------
 # SECTION — Sources
 # ----------------------------------------------------------------------------
 elif section == "📚 Sources":
@@ -408,3 +389,152 @@ elif section == "📚 Sources":
             st.markdown(f"- [{s['nom']}]({s['url']})")
         else:
             st.markdown(f"- {s['nom']}")
+
+# ----------------------------------------------------------------------------
+# SECTION — Export Word ajustable
+# ----------------------------------------------------------------------------
+elif section == "📄 Export Word":
+    st.subheader("Générer une synthèse Word sur mesure")
+    st.caption(
+        "Sélectionnez les éléments à inclure, puis générez un document .docx prêt à partager "
+        "ou à annoter."
+    )
+
+    with st.form("export_form"):
+        st.markdown("**Sections à inclure**")
+        c1, c2 = st.columns(2)
+        with c1:
+            inc_synthese = st.checkbox("Synthèse", value=True)
+            inc_methodo = st.checkbox("Méthodologie", value=False)
+            inc_panorama = st.checkbox("Panorama par juridiction", value=True)
+            inc_tableau = st.checkbox("Tableau comparatif", value=True)
+        with c2:
+            inc_risques = st.checkbox("Analyse transversale des risques", value=True)
+            inc_reponses = st.checkbox("Réponses réglementaires FR/UE", value=True)
+            inc_sources = st.checkbox("Sources", value=False)
+
+        pays_options = [p["nom"] for p in DATA["pays"]]
+        pays_choisis = st.multiselect(
+            "Juridictions à inclure dans le panorama (si sélectionné ci-dessus)",
+            options=pays_options, default=pays_options,
+        )
+
+        submitted = st.form_submit_button("📄 Générer le document Word")
+
+    def build_docx():
+        doc = Document()
+
+        style = doc.styles["Normal"]
+        style.font.name = "Calibri"
+        style.font.size = Pt(10.5)
+
+        title = doc.add_heading(DATA["meta"]["title"], level=0)
+        subtitle_p = doc.add_paragraph(DATA["meta"]["subtitle"])
+        subtitle_p.runs[0].italic = True
+        meta_p = doc.add_paragraph(f"{DATA['meta']['produced_by']} — {DATA['meta']['date_note']}")
+        meta_p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+        if inc_synthese:
+            doc.add_heading("Synthèse", level=1)
+            for para in DATA["synthese"]["abstract"]:
+                doc.add_paragraph(para)
+            doc.add_heading("Les six régimes juridiques majeurs", level=2)
+            table = doc.add_table(rows=1, cols=3)
+            table.style = "Light Grid Accent 1"
+            hdr = table.rows[0].cells
+            hdr[0].text, hdr[1].text, hdr[2].text = "Pays", "Texte de référence", "Année"
+            for r in DATA["synthese"]["regimes_cles"]:
+                row = table.add_row().cells
+                row[0].text, row[1].text, row[2].text = r["pays"], r["texte"], r["annee"]
+
+        if inc_methodo:
+            doc.add_heading("Méthodologie", level=1)
+            doc.add_paragraph(DATA["methodologie"]["objet"])
+            doc.add_heading("Définition retenue", level=2)
+            doc.add_paragraph(DATA["methodologie"]["definition"])
+            doc.add_heading("Fondements de compétence extraterritoriale", level=2)
+            for f in DATA["methodologie"]["fondements"]:
+                p = doc.add_paragraph(style="List Bullet")
+                p.add_run(f["titre"] + " — ").bold = True
+                p.add_run(f["description"])
+            doc.add_heading("Périmètre géographique", level=2)
+            doc.add_paragraph(DATA["methodologie"]["perimetre"])
+            doc.add_heading("Sources et limites", level=2)
+            doc.add_paragraph(DATA["methodologie"]["sources_limites"])
+
+        if inc_panorama:
+            doc.add_heading("Panorama par juridiction", level=1)
+            for pays in DATA["pays"]:
+                if pays["nom"] not in pays_choisis:
+                    continue
+                doc.add_heading(f"{pays['drapeau']} {pays['nom']}", level=2)
+                if pays["intro"]:
+                    doc.add_paragraph(pays["intro"])
+                for texte in pays["textes"]:
+                    doc.add_heading(f"{texte['nom']} ({texte['annee']})", level=3)
+                    doc.add_paragraph(texte["description"])
+                    for ex in texte.get("extraits") or []:
+                        p = doc.add_paragraph(style="List Bullet")
+                        p.add_run(ex["reference"] + " — ").bold = True
+                        p.add_run(ex["resume"])
+                    if texte.get("url"):
+                        doc.add_paragraph(f"Source : {texte.get('source_label') or texte['url']} ({texte['url']})")
+                if pays.get("note_complementaire"):
+                    note_p = doc.add_paragraph(pays["note_complementaire"])
+                    note_p.runs[0].italic = True
+
+        if inc_tableau:
+            doc.add_heading("Tableau comparatif de synthèse", level=1)
+            doc.add_paragraph(DATA["tableau_note"])
+            cols = ["Juridiction", "Texte", "Année", "Fondement", "Obligation", "Niveau de risque"]
+            table = doc.add_table(rows=1, cols=len(cols))
+            table.style = "Light Grid Accent 1"
+            for i, c in enumerate(cols):
+                table.rows[0].cells[i].text = c
+            for row in DATA["tableau_comparatif"]:
+                cells = table.add_row().cells
+                cells[0].text = row["juridiction"]
+                cells[1].text = row["texte"]
+                cells[2].text = row["annee"]
+                cells[3].text = row["fondement"]
+                cells[4].text = row["obligation"]
+                cells[5].text = row["niveau_risque"]
+
+        if inc_risques:
+            doc.add_heading("Analyse transversale des risques", level=1)
+            for r in DATA["risques_transversaux"]:
+                doc.add_heading(r["titre"], level=2)
+                doc.add_paragraph(r["texte"])
+
+        if inc_reponses:
+            doc.add_heading("Réponses réglementaires françaises et européennes", level=1)
+            for r in DATA["reponses_reglementaires"]:
+                doc.add_heading(r["titre"], level=2)
+                doc.add_paragraph(r["texte"])
+                if r.get("url"):
+                    doc.add_paragraph(f"Source : {r.get('source_label') or r['url']} ({r['url']})")
+
+        if inc_sources:
+            doc.add_heading("Sources", level=1)
+            doc.add_paragraph(DATA["sources_note"])
+            for s in DATA["sources"]:
+                p = doc.add_paragraph(style="List Bullet")
+                p.add_run(s["nom"] + (f" ({s['url']})" if s.get("url") else ""))
+
+        buf = io.BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+        return buf
+
+    if submitted:
+        if not any([inc_synthese, inc_methodo, inc_panorama, inc_tableau, inc_risques, inc_reponses, inc_sources]):
+            st.warning("Sélectionnez au moins une section avant de générer le document.")
+        else:
+            buf = build_docx()
+            st.success("Document généré ✅")
+            st.download_button(
+                label="⬇️ Télécharger le document Word",
+                data=buf,
+                file_name="synthese_extraterritorialite_cloud.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
