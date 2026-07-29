@@ -68,7 +68,7 @@
     ]
   },
   "methodologie": {
-    "objet": "Cette note répond à une demande d'analyse des lois étrangères à portée extraterritoriale susceptibles de s'appliquer au secteur du cloud, à l'exclusion des textes émanant des États membres de l'Union européenne ou du droit de l'Union lui-même. Elle a vocation à servir de document de référence partageable avec les parties prenantes du secteur (fournisseurs, clients, filière de la confiance numérique).",
+    "objet": "Cette note répond à une demande d'analyse des lois étrangères à portée extraterritoriale susceptibles de s'appliquer au secteur du cloud, à l'exclusion des textes émanant des États membres de l'Union européenne ou du droit de l'Union lui-même.",
     "definition": "On entend ici par « portée extraterritoriale » toute disposition qui permet à une autorité publique étrangère d'exiger d'un opérateur, ou de contraindre un opérateur, à un acte relatif à des données (accès, communication, localisation, modification, interception, levée du chiffrement) alors que tout ou partie du traitement, de l'infrastructure ou des utilisateurs concernés se trouve hors du territoire de l'État à l'origine de la norme.",
     "fondements": [
       {
